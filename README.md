@@ -3,7 +3,7 @@
 
 
 ### 교육 기관
-- 경북대학교 데이터 융복합 연구원 <a href='https://datainstitute.knu.ac.kr/' ></a>
+- 경북대학교 데이터 융복합 연구원 (<a href='https://datainstitute.knu.ac.kr/' >Link</a>)
 
 
 ### 교육 기간
