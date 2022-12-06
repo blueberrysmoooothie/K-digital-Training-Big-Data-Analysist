@@ -1,0 +1,13 @@
+name: hasu_app
+title: hasu_app
+username:
+account: blueberrysmoooothie
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6821789
+bundleId: 6224512
+url: https://blueberrysmoooothie.shinyapps.io/hasu_app/
+when: 1661146771.08059
+lastSyncTime: 1661146771.08061
+asMultiple: FALSE
+asStatic: FALSE

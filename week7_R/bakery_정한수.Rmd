@@ -1,0 +1,186 @@
+---
+title: "bakery_정한수"
+author: "hansu"
+date: "2022-08-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 자료 출처
+https://www.kaggle.com/datasets/hosubjeong/bakery-sales
+
+  
+## 자료 전처리
+
+### 자료 읽어오기
+```{r}
+Price <- read.csv('./bakery/Bakery price.csv')
+Sales <- read.csv('./bakery/Bakery Sales.csv')
+Sales<-Sales[1:2420,]
+```
+
+```{r}
+str(Price)
+str(Sales)
+```
+
+### 결측값 확인
+```{r}
+library('VIM')
+aggr(Sales[,1:4], prop = F,numbers = T)
+```
+
+
+### Price 자료 정리
+```{r}
+Price$Name
+Price$Name[Price$Name== 'valina latte'] <- 'vanila latte'
+
+```
+
+결제 기록에서 판매기록와 다른 상품이름 존재
+- 결제 기록에 임의로 추론한 가격의 데이터 추가 
+
+```{r}
+menus <- Price$Name
+saled_menus <- names(Sales)[-(1:4)]
+cat('\n판매기록 상의 상품 명 :','\n')
+saled_menus
+cat('\nPrice 자료와 다른 상품 명 :\n')
+saled_menus[! saled_menus %in% menus]
+saled_menus <- gsub('[.]',' ' ,saled_menus)
+names(Sales)[-(1:4)]<-saled_menus
+
+Price[dim(Price)[1]+1,] <- c('americano', 4000)
+Price[dim(Price)[1]+1,] <- c('caffe latte', 4500)
+Price[dim(Price)[1]+1,] <- c('croque monsieur',4000 )
+Price[dim(Price)[1]+1,] <- c('mad garlic', 3000)
+Price[dim(Price)[1]+1,] <- c('milk tea', 4500)
+cat('\n판매기록 상의 상품 명 추가후 Price :\n')
+Price$Name
+
+
+```
+
+## 이상치 탐색
+```{r}
+boxplot(Sales$total)
+outlier<-Sales$total[Sales$total == max(Sales$total)]
+outlier
+Sales$total[Sales$total == max(Sales$total)] <- outlier /10
+boxplot(Sales$total)
+```
+
+
+## 시각화
+
+```{r pressure, echo=FALSE}
+options(scipen=999)
+color_list = colors()
+
+```
+
+### 요일별 주문횟수
+```{r , echo=FALSE}
+table(Sales$day.of.week)
+barplot(table(Sales$day.of.week), col = color_list[1:7 *10])
+```
+
+### 요일별 판매 금액 평균
+```{r , echo=FALSE}
+week_mean <- aggregate(Sales$total, by = list(day.of.week = Sales$day.of.week), FUN = mean)
+week_mean
+barplot(week_mean$x, names.arg = week_mean$day.of.week,
+        main = '요일별 판매 금액 평균', col = color_list[1:7 *10])
+```
+
+
+```{r , echo=FALSE}
+# install.packages('nord')
+library(ggplot2)
+library(nord)
+plot_df <- data.frame(list(day.of.week = Sales$day.of.week, total = Sales$total))
+ggplot(plot_df, aes(x = day.of.week, y = total, fill= factor(day.of.week))) + 
+  scale_fill_nord('baie_mouton') + 
+  geom_violin(trim = T)
+
+boxplot(total~day.of.week, data = plot_df,
+        main = '요일별 판매 금액', col = color_list[1:7 *10])
+```
+
+
+### 월별 매출 합계
+```{r , echo=FALSE}
+month_sales <- aggregate(Sales$total, by = list(yearMonth = strftime(Sales$datetime, "%Y_%m")), FUN = sum)
+# month_sales
+barplot(month_sales$x, names.arg = month_sales$yearMonth,
+        main = '월별 판매 금액 평균',
+        angle=90,las=2, col = color_list[1:7 *10])
+```
+
+
+
+```{r , echo=FALSE}
+plot_df <- data.frame(list(yearMonth = strftime(Sales$datetime, "%Y_%m"), total = Sales$total))
+ggplot(plot_df, aes(x = yearMonth, y = total, fill= factor(yearMonth))) + 
+  scale_fill_nord('baie_mouton') + 
+  geom_violin(trim = T)
+
+boxplot(total~yearMonth, data = plot_df,
+        main = '월별 판매 금액', col = color_list[1:7 *10])
+```
+
+
+### 상품별 판매 수
+```{r , echo=FALSE}
+menu_sales_count <- apply(Sales[,-(1:4)], MARGIN = 2, FUN = sum, na.rm = T)
+menu_sales_count
+
+barplot(menu_sales_count, 
+        col = color_list[1:length(menu_sales_count) *10],
+        angle=90,las=2)
+```
+
+### 음료, 제빵/ 제과 류 구분
+```{r , echo=FALSE}
+drinks = c('americano', 'caffe latte', 'cacao deep','milk tea','lemon ade','vanila latte','berry ade' )
+bakery= names(menu_sales_count)[!(names(menu_sales_count) %in% drinks)]
+barplot(menu_sales_count[drinks], 
+        col = color_list[1:length(drinks) *10],
+        angle=90,las=2)
+
+barplot(menu_sales_count[c(bakery)], 
+        col = color_list[1:length(bakery) *10],
+        angle=90,las=2)
+```
+
+### 커피
+```{r , echo=FALSE}
+coffee <- c('americano', 'caffe latte','vanila latte')
+barplot(menu_sales_count[c(coffee)], 
+        col = color_list[1:length(coffee) *10],
+        angle=90,las=2)
+```
+
+### angbutter 구매 자료
+```{r, echo=FALSE, fig.height= 4, fig.width=8}
+angbutter_Sales <- Sales[!is.na(Sales$angbutter),]
+str(angbutter_Sales)
+angbutter_sales_count <- apply(angbutter_Sales[,-(1:5)], MARGIN = 2, FUN = sum, na.rm = T)
+angbutter_sales_count
+
+barplot(angbutter_sales_count, 
+        col = color_list[1:length(angbutter_sales_count) *10],
+        angle=90,las=2)
+```
+
+
+## 결론
+- 매출 기록을 통해 요일별 평균 주문 금액을 유사하지만, 토요일과 일요일 총 매출이 높았고 
+8월, 2월, 3월에 높은 매출을 보였다. 
+- 각 메뉴별 주문 수에서는 앙버터 매출이 가장 많았고, 플레인 브레드, 크로아상이 비교적 높은 매출을 보였다.
+- 주력 상품인 앙버터와 같이 구매한 메뉴를 살펴보았을 때도 비슷하지만, 초콜릿 케이크가 높은 경향을 보였다.
+
