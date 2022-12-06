@@ -3,11 +3,11 @@
 
 
 ### 교육 기관
-- 경북대학교 데이터 융복합 연구원 <a href =- 'https://datainstitute.knu.ac.kr/' ></a>
+- 경북대학교 데이터 융복합 연구원 <a href='https://datainstitute.knu.ac.kr/' ></a>
 
 
 ### 교육 기간
-- 2022. 06 ~ 2022. 12
+- 2022-06 ~ 12
 
 
 ### 교육 과정
